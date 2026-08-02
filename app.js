@@ -445,6 +445,10 @@ async function syncTelemetry() {
           existing.liters = liters;
           fuelChanged = true;
         }
+        if (!existing.recordedAt && purchase.recordedAt) {
+          existing.recordedAt = purchase.recordedAt;
+          fuelChanged = true;
+        }
         existing.x = x;
         existing.y = y;
         existing.z = z;
@@ -452,6 +456,7 @@ async function syncTelemetry() {
         const station = hasFuelCoordinates({ x, z }) ? nearestFuelStation(x, z, game.id) : null;
         data.fuelPurchases.push({
           id: crypto.randomUUID(), telemetryId: purchase.id, date: data.gameDate,
+          recordedAt: purchase.recordedAt || new Date().toISOString(),
           game: game.id, liters, stationName: station?.name || "", x, y, z
         });
         fuelChanged = true;
@@ -537,12 +542,17 @@ function formatDate(value) {
   return new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric" }).format(parseDate(value));
 }
 
-function formatMoney(value) {
-  return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(value || 0);
+function formatLocalTime(value) {
+  if (!value) return "Time unavailable";
+  const timestamp = new Date(value);
+  if (Number.isNaN(timestamp.getTime())) return "Time unavailable";
+  return new Intl.DateTimeFormat(undefined, {
+    hour: "numeric", minute: "2-digit", timeZoneName: "short"
+  }).format(timestamp);
 }
 
-function formatFuelMoney(value) {
-  return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value || 0);
+function formatMoney(value) {
+  return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(value || 0);
 }
 
 function getConvictions(category, asOfDate, years = null) {
@@ -732,7 +742,8 @@ function renderCargo() {
 }
 
 function renderFuel() {
-  const purchases = [...(data.fuelPurchases || [])].sort((a, b) => b.date.localeCompare(a.date));
+  const purchases = [...(data.fuelPurchases || [])]
+    .sort((a, b) => (b.recordedAt || b.date).localeCompare(a.recordedAt || a.date));
   const totalGallons = purchases.reduce((sum, item) => sum + Number(item.liters || 0) * 0.264172, 0);
   const averageGallons = purchases.length ? totalGallons / purchases.length : 0;
   const latestGallons = purchases.length ? Number(purchases[0].liters || 0) * 0.264172 : 0;
@@ -745,7 +756,7 @@ function renderFuel() {
   document.querySelector("#fuelTableBody").innerHTML = purchases.map(item => {
     const gallons = Number(item.liters || 0) * 0.264172;
     return `<tr>
-      <td>${formatDate(item.date)}</td>
+      <td><strong>${formatDate(item.date)}</strong><small>${formatLocalTime(item.recordedAt)} local</small></td>
       <td><label><span class="sr-only">Station name</span><input class="station-input" type="text" maxlength="80" list="fuelStationOptions" value="${escapeAttribute(item.stationName || "")}" placeholder="${escapeAttribute(detectedFuelStopName(item))}" data-fuel-station="${escapeAttribute(item.id)}" aria-label="Station name"></label><small>${item.stationName ? "Automatically recognized on return" : hasFuelCoordinates(item) ? "Location detected automatically · name optional" : "Location unavailable for this older fill"}</small></td>
       <td><strong class="fuel-amount">${gallons.toFixed(2)} gal</strong><small>${Number(item.liters || 0).toFixed(1)} liters detected</small></td>
       <td><strong>${item.game === "eut2" ? "ETS2" : "ATS"} telemetry</strong><small>Quantity captured automatically</small></td>
