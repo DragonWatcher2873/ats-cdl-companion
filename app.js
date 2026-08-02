@@ -338,10 +338,11 @@ function hasFuelCoordinates(item) {
   return Number.isFinite(Number(item.x)) && Number.isFinite(Number(item.z)) && (Number(item.x) !== 0 || Number(item.z) !== 0);
 }
 
-function nearestFuelStation(x, z, maximumDistance = 150) {
+function nearestFuelStation(x, z, gameId = "", maximumDistance = 150) {
   let nearest = null;
   let nearestDistance = maximumDistance;
   for (const station of data.fuelStations || []) {
+    if (station.game && gameId && station.game !== gameId) continue;
     const distance = Math.hypot(Number(station.x) - Number(x), Number(station.z) - Number(z));
     if (distance <= nearestDistance) {
       nearest = station;
@@ -349,6 +350,11 @@ function nearestFuelStation(x, z, maximumDistance = 150) {
     }
   }
   return nearest;
+}
+
+function detectedFuelStopName(item) {
+  if (!hasFuelCoordinates(item)) return "Fuel stop";
+  return `Fuel stop near ${Math.round(Number(item.x))}, ${Math.round(Number(item.z))}`;
 }
 
 const telemetryOffenceMap = {
@@ -437,10 +443,12 @@ async function syncTelemetry() {
         existing.y = y;
         existing.z = z;
       } else {
-        const station = hasFuelCoordinates({ x, z }) ? nearestFuelStation(x, z) : null;
+        const station = hasFuelCoordinates({ x, z }) ? nearestFuelStation(x, z, game.id) : null;
         data.fuelPurchases.push({
           id: crypto.randomUUID(), telemetryId: purchase.id, date: data.gameDate,
-          liters, pricePerGallon: 0, stationName: station?.name || "", x, y, z
+          game: game.id, liters, pricePerGallon: Number(station?.pricePerGallon || 0),
+          priceSource: Number(station?.pricePerGallon || 0) > 0 ? "learned" : "",
+          stationName: station?.name || "", x, y, z
         });
         fuelChanged = true;
       }
@@ -735,9 +743,9 @@ function renderFuel() {
     const spent = gallons * Number(item.pricePerGallon || 0);
     return `<tr>
       <td>${formatDate(item.date)}</td>
-      <td><label><span class="sr-only">Station name</span><input class="station-input" type="text" maxlength="80" list="fuelStationOptions" value="${escapeAttribute(item.stationName || "")}" placeholder="Name this station" data-fuel-station="${escapeAttribute(item.id)}" aria-label="Station name"></label><small>${item.stationName ? "Automatically recognized on return" : hasFuelCoordinates(item) ? "Enter once to teach this location" : "Location unavailable for this older fill"}</small></td>
+      <td><label><span class="sr-only">Station name</span><input class="station-input" type="text" maxlength="80" list="fuelStationOptions" value="${escapeAttribute(item.stationName || "")}" placeholder="${escapeAttribute(detectedFuelStopName(item))}" data-fuel-station="${escapeAttribute(item.id)}" aria-label="Station name"></label><small>${item.stationName ? "Automatically recognized on return" : hasFuelCoordinates(item) ? "Location detected automatically · name optional" : "Location unavailable for this older fill"}</small></td>
       <td><strong class="fuel-amount">${gallons.toFixed(2)} gal</strong><small>${Number(item.liters || 0).toFixed(1)} liters detected</small></td>
-      <td><label><span class="sr-only">Price per gallon</span><input type="number" min="0" step="0.001" value="${Number(item.pricePerGallon || 0).toFixed(3)}" data-fuel-price="${escapeAttribute(item.id)}" aria-label="Price per gallon"></label></td>
+      <td><label><span class="sr-only">Price per gallon</span><input type="number" min="0" step="0.001" value="${Number(item.pricePerGallon || 0).toFixed(3)}" data-fuel-price="${escapeAttribute(item.id)}" aria-label="Price per gallon"></label><small>${item.priceSource === "learned" ? "Last known at this location" : "Optional"}</small></td>
       <td><strong class="fuel-amount">${formatFuelMoney(spent)}</strong></td>
       <td><div class="row-actions"><button data-delete-fuel="${escapeAttribute(item.id)}" title="Delete fill-up" aria-label="Delete fill-up"><i data-lucide="trash-2"></i></button></div></td>
     </tr>`;
@@ -1117,9 +1125,12 @@ function attachEvents() {
       const name = stationInput.value.trim();
       purchase.stationName = name;
       if (name && hasFuelCoordinates(purchase)) {
-        const station = nearestFuelStation(purchase.x, purchase.z);
+        const station = nearestFuelStation(purchase.x, purchase.z, purchase.game);
         if (station) station.name = name;
-        else data.fuelStations.push({ id: crypto.randomUUID(), name, x: purchase.x, y: purchase.y, z: purchase.z });
+        else data.fuelStations.push({
+          id: crypto.randomUUID(), game: purchase.game || "", name,
+          pricePerGallon: Number(purchase.pricePerGallon || 0), x: purchase.x, y: purchase.y, z: purchase.z
+        });
       }
       saveData();
       render();
@@ -1131,6 +1142,15 @@ function attachEvents() {
     const purchase = data.fuelPurchases.find(item => item.id === input.dataset.fuelPrice);
     if (!purchase) return;
     purchase.pricePerGallon = Math.max(0, Number(input.value || 0));
+    purchase.priceSource = purchase.pricePerGallon > 0 ? "entered" : "";
+    if (hasFuelCoordinates(purchase)) {
+      const station = nearestFuelStation(purchase.x, purchase.z, purchase.game);
+      if (station) station.pricePerGallon = purchase.pricePerGallon;
+      else data.fuelStations.push({
+        id: crypto.randomUUID(), game: purchase.game || "", name: purchase.stationName || "",
+        pricePerGallon: purchase.pricePerGallon, x: purchase.x, y: purchase.y, z: purchase.z
+      });
+    }
     saveData();
     render();
     showToast("Fuel cost updated.");

@@ -125,12 +125,12 @@
         <section class="view" id="fuelView">
           <div class="section-toolbar">
             <div><p class="eyebrow">Operating expenses</p><h2>Fuel report</h2></div>
-            <span class="fuel-source"><i data-lucide="radio"></i>Gallons detected from the connected game · enter station price</span>
+            <span class="fuel-source"><i data-lucide="radio"></i>Gallons and location detected automatically · price is optional</span>
           </div>
           <div class="metric-grid fuel-metrics">
             <article class="metric"><span>Fill-ups</span><strong id="fuelStopCount">0</strong><small>Detected purchases</small></article>
             <article class="metric"><span>Total gallons</span><strong id="fuelGallonTotal">0.0</strong><small>US gallons</small></article>
-            <article class="metric"><span>Total spent</span><strong id="fuelSpentTotal">$0</strong><small>Entered fuel costs</small></article>
+            <article class="metric"><span>Total spent</span><strong id="fuelSpentTotal">$0</strong><small>Known fuel costs</small></article>
             <article class="metric"><span>Average price</span><strong id="fuelAveragePrice">$0.00</strong><small>Per gallon</small></article>
           </div>
           <div class="table-wrap">
@@ -305,7 +305,7 @@
             <section class="help-panel manual-panel">
               <div class="help-panel-heading"><i data-lucide="mouse-pointer-click"></i><div><p class="eyebrow">From the driver</p><h2>You review or enter</h2></div></div>
               <ul class="feature-list">
-                <li><i data-lucide="map-pin"></i><div><strong>Station name and fuel price</strong><p>The SDK does not provide either value. Name a location once for automatic recognition on later visits.</p></div></li>
+                <li><i data-lucide="map-pin"></i><div><strong>Station name and fuel price</strong><p>The SDK does not provide either value. The site detects the location, then remembers an optional name and last known price for later visits.</p></div></li>
                 <li><i data-lucide="messages-square"></i><div><strong>Collision confirmation</strong><p>Damage alone cannot prove a traffic collision. You decide whether a pending report is created.</p></div></li>
                 <li><i data-lucide="gavel"></i><div><strong>Case outcome and details</strong><p>Choose pending, convicted, or dismissed and add gameplay fines, points, and notes when needed.</p></div></li>
                 <li><i data-lucide="contact"></i><div><strong>Fictional CDL profile</strong><p>Set the name, home state, class, endorsements, medical date, and enforcement preferences.</p></div></li>
@@ -406,6 +406,6 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js" integrity="sha384-uTYyvsSSUZeaPhb5RbKlQa0zY/WpX/QHfvg2mczXyBQOpkWPEDy9lczyp+w7SKXu" crossorigin="anonymous"></script>
-  <script src="app.js?v=cb4cbdf"></script>
+  <script src="app.js?v=fuel-learning-1"></script>
 </body>
 </html>
