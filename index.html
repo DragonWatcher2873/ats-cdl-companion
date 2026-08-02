@@ -125,17 +125,17 @@
         <section class="view" id="fuelView">
           <div class="section-toolbar">
             <div><p class="eyebrow">Operating expenses</p><h2>Fuel report</h2></div>
-            <span class="fuel-source"><i data-lucide="radio"></i>Gallons and location detected automatically · price is optional</span>
+            <span class="fuel-source"><i data-lucide="radio"></i>Fuel quantity and location come directly from game telemetry</span>
           </div>
           <div class="metric-grid fuel-metrics">
             <article class="metric"><span>Fill-ups</span><strong id="fuelStopCount">0</strong><small>Detected purchases</small></article>
             <article class="metric"><span>Total gallons</span><strong id="fuelGallonTotal">0.0</strong><small>US gallons</small></article>
-            <article class="metric"><span>Total spent</span><strong id="fuelSpentTotal">$0</strong><small>Known fuel costs</small></article>
-            <article class="metric"><span>Average price</span><strong id="fuelAveragePrice">$0.00</strong><small>Per gallon</small></article>
+            <article class="metric"><span>Average fill</span><strong id="fuelAverageFill">0.0 gal</strong><small>Per detected stop</small></article>
+            <article class="metric"><span>Latest fill</span><strong id="fuelLatestFill">0.0 gal</strong><small>Most recent stop</small></article>
           </div>
           <div class="table-wrap">
             <table class="fuel-table">
-              <thead><tr><th>Date</th><th>Station</th><th>Fuel added</th><th>Price / gallon</th><th>Amount spent</th><th></th></tr></thead>
+              <thead><tr><th>Date</th><th>Location</th><th>Fuel added</th><th>Source</th><th></th></tr></thead>
               <tbody id="fuelTableBody"></tbody>
             </table>
             <datalist id="fuelStationOptions"></datalist>
@@ -305,7 +305,7 @@
             <section class="help-panel manual-panel">
               <div class="help-panel-heading"><i data-lucide="mouse-pointer-click"></i><div><p class="eyebrow">From the driver</p><h2>You review or enter</h2></div></div>
               <ul class="feature-list">
-                <li><i data-lucide="map-pin"></i><div><strong>Station name and fuel price</strong><p>The SDK does not provide either value. The site detects the location, then remembers an optional name and last known price for later visits.</p></div></li>
+                <li><i data-lucide="map-pin"></i><div><strong>Fuel-stop location</strong><p>The site records game-world coordinates automatically. You may add a private location label, but no unverifiable price or spending claim is stored.</p></div></li>
                 <li><i data-lucide="messages-square"></i><div><strong>Collision confirmation</strong><p>Damage alone cannot prove a traffic collision. You decide whether a pending report is created.</p></div></li>
                 <li><i data-lucide="gavel"></i><div><strong>Case outcome and details</strong><p>Choose pending, convicted, or dismissed and add gameplay fines, points, and notes when needed.</p></div></li>
                 <li><i data-lucide="contact"></i><div><strong>Fictional CDL profile</strong><p>Set the name, home state, class, endorsements, medical date, and enforcement preferences.</p></div></li>
@@ -337,7 +337,7 @@
             <section class="help-panel compact-help-panel">
               <div class="help-panel-heading"><i data-lucide="triangle-alert"></i><div><p class="eyebrow">Important limits</p><h2>What this is not</h2></div></div>
               <p>This is a fictional gameplay companion. It is not legal advice, an official driving record, a government service, or a substitute for current laws and agency guidance.</p>
-              <p>Collision detection is an informed damage signal, not a direct SCS collision event. Fuel cost is calculated from the price you enter. Cargo value means the game's expected job payout.</p>
+              <p>Collision detection is an informed damage signal, not a direct SCS collision event. SCS does not expose fuel price or payment, so Fuel Report records quantity and location only. Cargo value means the game's expected job payout.</p>
               <p>The plugin supports SCS telemetry API 1.x minor revisions. A future incompatible 2.x API or game architecture change may require an updated plugin.</p>
             </section>
           </div>
@@ -406,6 +406,6 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js" integrity="sha384-uTYyvsSSUZeaPhb5RbKlQa0zY/WpX/QHfvg2mczXyBQOpkWPEDy9lczyp+w7SKXu" crossorigin="anonymous"></script>
-  <script src="app.js?v=fuel-learning-1"></script>
+  <script src="app.js?v=telemetry-fuel-1"></script>
 </body>
 </html>

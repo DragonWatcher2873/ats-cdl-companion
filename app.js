@@ -87,10 +87,16 @@ function loadData() {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
     if (!saved) return structuredClone(defaultState);
     const record = { ...structuredClone(defaultState), ...saved, profile: { ...defaultState.profile, ...saved.profile } };
-    return migrateLegacyUtcDate(record, saved);
+    return removeLegacyFuelPrices(migrateLegacyUtcDate(record, saved));
   } catch {
     return structuredClone(defaultState);
   }
+}
+
+function removeLegacyFuelPrices(record) {
+  record.fuelPurchases = (record.fuelPurchases || []).map(({ pricePerGallon, priceSource, ...purchase }) => purchase);
+  record.fuelStations = (record.fuelStations || []).map(({ pricePerGallon, ...station }) => station);
+  return record;
 }
 
 function saveData() {
@@ -130,7 +136,7 @@ function normalizedRecord(record) {
     fuelStations: Array.isArray(record?.fuelStations) ? record.fuelStations : [],
     cargoJobs: Array.isArray(record?.cargoJobs) ? record.cargoJobs : []
   };
-  return migrateLegacyUtcDate(normalized, record);
+  return removeLegacyFuelPrices(migrateLegacyUtcDate(normalized, record));
 }
 
 function browserRecordIsBlank() {
@@ -446,9 +452,7 @@ async function syncTelemetry() {
         const station = hasFuelCoordinates({ x, z }) ? nearestFuelStation(x, z, game.id) : null;
         data.fuelPurchases.push({
           id: crypto.randomUUID(), telemetryId: purchase.id, date: data.gameDate,
-          game: game.id, liters, pricePerGallon: Number(station?.pricePerGallon || 0),
-          priceSource: Number(station?.pricePerGallon || 0) > 0 ? "learned" : "",
-          stationName: station?.name || "", x, y, z
+          game: game.id, liters, stationName: station?.name || "", x, y, z
         });
         fuelChanged = true;
       }
@@ -730,23 +734,21 @@ function renderCargo() {
 function renderFuel() {
   const purchases = [...(data.fuelPurchases || [])].sort((a, b) => b.date.localeCompare(a.date));
   const totalGallons = purchases.reduce((sum, item) => sum + Number(item.liters || 0) * 0.264172, 0);
-  const totalSpent = purchases.reduce((sum, item) => sum + Number(item.liters || 0) * 0.264172 * Number(item.pricePerGallon || 0), 0);
-  const pricedGallons = purchases.filter(item => Number(item.pricePerGallon) > 0).reduce((sum, item) => sum + Number(item.liters || 0) * 0.264172, 0);
+  const averageGallons = purchases.length ? totalGallons / purchases.length : 0;
+  const latestGallons = purchases.length ? Number(purchases[0].liters || 0) * 0.264172 : 0;
   document.querySelector("#fuelStopCount").textContent = purchases.length;
   document.querySelector("#fuelGallonTotal").textContent = totalGallons.toFixed(1);
-  document.querySelector("#fuelSpentTotal").textContent = formatFuelMoney(totalSpent);
-  document.querySelector("#fuelAveragePrice").textContent = pricedGallons ? `$${(totalSpent / pricedGallons).toFixed(2)}` : "$0.00";
+  document.querySelector("#fuelAverageFill").textContent = `${averageGallons.toFixed(1)} gal`;
+  document.querySelector("#fuelLatestFill").textContent = `${latestGallons.toFixed(1)} gal`;
   const stationNames = [...new Set((data.fuelStations || []).map(item => item.name).filter(Boolean))].sort();
   document.querySelector("#fuelStationOptions").innerHTML = stationNames.map(name => `<option value="${escapeAttribute(name)}"></option>`).join("");
   document.querySelector("#fuelTableBody").innerHTML = purchases.map(item => {
     const gallons = Number(item.liters || 0) * 0.264172;
-    const spent = gallons * Number(item.pricePerGallon || 0);
     return `<tr>
       <td>${formatDate(item.date)}</td>
       <td><label><span class="sr-only">Station name</span><input class="station-input" type="text" maxlength="80" list="fuelStationOptions" value="${escapeAttribute(item.stationName || "")}" placeholder="${escapeAttribute(detectedFuelStopName(item))}" data-fuel-station="${escapeAttribute(item.id)}" aria-label="Station name"></label><small>${item.stationName ? "Automatically recognized on return" : hasFuelCoordinates(item) ? "Location detected automatically · name optional" : "Location unavailable for this older fill"}</small></td>
       <td><strong class="fuel-amount">${gallons.toFixed(2)} gal</strong><small>${Number(item.liters || 0).toFixed(1)} liters detected</small></td>
-      <td><label><span class="sr-only">Price per gallon</span><input type="number" min="0" step="0.001" value="${Number(item.pricePerGallon || 0).toFixed(3)}" data-fuel-price="${escapeAttribute(item.id)}" aria-label="Price per gallon"></label><small>${item.priceSource === "learned" ? "Last known at this location" : "Optional"}</small></td>
-      <td><strong class="fuel-amount">${formatFuelMoney(spent)}</strong></td>
+      <td><strong>${item.game === "eut2" ? "ETS2" : "ATS"} telemetry</strong><small>Quantity captured automatically</small></td>
       <td><div class="row-actions"><button data-delete-fuel="${escapeAttribute(item.id)}" title="Delete fill-up" aria-label="Delete fill-up"><i data-lucide="trash-2"></i></button></div></td>
     </tr>`;
   }).join("");
@@ -1129,7 +1131,7 @@ function attachEvents() {
         if (station) station.name = name;
         else data.fuelStations.push({
           id: crypto.randomUUID(), game: purchase.game || "", name,
-          pricePerGallon: Number(purchase.pricePerGallon || 0), x: purchase.x, y: purchase.y, z: purchase.z
+          x: purchase.x, y: purchase.y, z: purchase.z
         });
       }
       saveData();
@@ -1137,23 +1139,6 @@ function attachEvents() {
       showToast(name ? "Station saved and will be recognized next time." : "Station name cleared.");
       return;
     }
-    const input = event.target.closest("[data-fuel-price]");
-    if (!input) return;
-    const purchase = data.fuelPurchases.find(item => item.id === input.dataset.fuelPrice);
-    if (!purchase) return;
-    purchase.pricePerGallon = Math.max(0, Number(input.value || 0));
-    purchase.priceSource = purchase.pricePerGallon > 0 ? "entered" : "";
-    if (hasFuelCoordinates(purchase)) {
-      const station = nearestFuelStation(purchase.x, purchase.z, purchase.game);
-      if (station) station.pricePerGallon = purchase.pricePerGallon;
-      else data.fuelStations.push({
-        id: crypto.randomUUID(), game: purchase.game || "", name: purchase.stationName || "",
-        pricePerGallon: purchase.pricePerGallon, x: purchase.x, y: purchase.y, z: purchase.z
-      });
-    }
-    saveData();
-    render();
-    showToast("Fuel cost updated.");
   });
   document.querySelector("#fuelTableBody").addEventListener("click", event => {
     const button = event.target.closest("[data-delete-fuel]");
