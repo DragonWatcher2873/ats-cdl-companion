@@ -1,0 +1,412 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="A fictional CDL compliance companion for American Truck Simulator and Euro Truck Simulator 2.">
+  <meta name="referrer" content="no-referrer">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://unpkg.com; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self' http://127.0.0.1:38211 https://cdl-lisence-stats.dragonwatcher2873.workers.dev; img-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>Road Authority | ATS &amp; ETS2 CDL Companion</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=cb4cbdf">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <span class="brand-mark">RA</span>
+        <span><strong>Road Authority</strong><small>ATS &amp; ETS2 CDL Companion</small></span>
+      </div>
+
+      <nav class="nav-list" aria-label="Primary navigation">
+        <button class="nav-item active" data-view="dashboard"><i data-lucide="layout-dashboard"></i><span>Dashboard</span></button>
+        <button class="nav-item" data-view="record"><i data-lucide="clipboard-list"></i><span>Driver Record</span></button>
+        <button class="nav-item" data-view="fuel"><i data-lucide="fuel"></i><span>Fuel Report</span></button>
+        <button class="nav-item" data-view="cargo"><i data-lucide="package-check"></i><span>Cargo Report</span></button>
+        <button class="nav-item" data-view="profile"><i data-lucide="contact"></i><span>CDL Profile</span></button>
+        <button class="nav-item" data-view="rules"><i data-lucide="scale"></i><span>Rules Desk</span></button>
+        <button class="nav-item" data-view="about"><i data-lucide="circle-help"></i><span>About &amp; Help</span></button>
+      </nav>
+
+      <div class="sidebar-actions">
+        <a class="button primary full" href="https://github.com/DragonWatcher2873/ats-cdl-companion/releases/latest/download/CDL-Lisence-Setup.exe" title="Download CDL Lisence installer for Windows"><i data-lucide="hard-drive-download"></i>Download CDL Lisence</a>
+        <button class="button secondary full" id="exportButton"><i data-lucide="download"></i>Export record</button>
+        <label class="button ghost full file-button"><i data-lucide="upload"></i>Import record<input type="file" id="importInput" accept="application/json"></label>
+      </div>
+
+      <div class="fiction-notice">
+        <i data-lucide="gamepad-2"></i>
+        <span><strong>Fictional gameplay tool</strong>Not legal advice or an official driving record.</span>
+      </div>
+      <p class="copyright-notice">&copy; 2026 DragonWatcher. All rights reserved.<strong>Sole founder and creator.</strong></p>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <button class="icon-button menu-button" id="menuButton" title="Open navigation" aria-label="Open navigation"><i data-lucide="menu"></i></button>
+        <div>
+          <p class="eyebrow">Federal + Oklahoma simulation</p>
+          <h1 id="viewTitle">Compliance dashboard</h1>
+        </div>
+        <div class="topbar-actions">
+          <button class="icon-button account-button" id="accountButton" type="button" title="Companion account" aria-label="Open companion account"><i data-lucide="user-round"></i><span id="accountButtonLabel">Sign in</span></button>
+          <button class="icon-button theme-button" id="themeButton" type="button" title="Switch to dark mode" aria-label="Switch to dark mode" aria-pressed="false"><i data-lucide="moon"></i></button>
+          <span class="telemetry-status offline" id="telemetryStatus"><i data-lucide="radio"></i><span>Game offline</span></span>
+          <label class="game-date"><span>Game date</span><input type="date" id="gameDateInput"></label>
+          <button class="button primary" id="openIncidentButton"><i data-lucide="file-plus-2"></i>Log incident</button>
+        </div>
+      </header>
+
+      <div class="content">
+        <section class="view active" id="dashboardView">
+          <div class="status-band" id="statusBand">
+            <div class="status-seal"><i data-lucide="shield-check"></i></div>
+            <div class="status-copy">
+              <span class="status-label">Commercial driving status</span>
+              <strong id="licenseStatus">VALID</strong>
+              <p id="statusDetail">No active federal disqualification.</p>
+            </div>
+            <dl class="status-facts">
+              <div><dt>Driver</dt><dd id="summaryDriver">New Driver</dd></div>
+              <div><dt>License</dt><dd id="summaryLicense">Class A</dd></div>
+              <div><dt>Medical</dt><dd id="summaryMedical">Not set</dd></div>
+            </dl>
+          </div>
+
+          <section class="community-strip" aria-labelledby="communityHeading">
+            <div class="community-heading"><i data-lucide="radio-tower"></i><div><span>Community activity</span><strong id="communityHeading">CDL Lisence network</strong></div></div>
+            <dl>
+              <div><dt>Installer downloads</dt><dd id="downloadCount">--</dd></div>
+              <div><dt>Drivers online</dt><dd id="activeDriverCount">--</dd></div>
+              <div><dt>ATS online</dt><dd id="atsDriverCount">--</dd></div>
+              <div><dt>ETS2 online</dt><dd id="ets2DriverCount">--</dd></div>
+            </dl>
+          </section>
+
+          <div class="metric-grid">
+            <article class="metric"><span>Convictions</span><strong id="convictionCount">0</strong><small>Recorded incidents</small></article>
+            <article class="metric"><span>Serious violations</span><strong id="seriousCount">0</strong><small>Rolling 3 years</small></article>
+            <article class="metric"><span>Oklahoma points</span><strong id="statePointCount">0</strong><small>Current point cycle</small></article>
+            <article class="metric"><span>Unpaid fines</span><strong id="fineTotal">$0</strong><small>Gameplay penalties</small></article>
+          </div>
+
+          <div class="dashboard-grid">
+            <section class="panel record-panel">
+              <div class="panel-heading"><div><p class="eyebrow">Activity</p><h2>Recent driver record</h2></div><button class="text-button" data-go-view="record">View all <i data-lucide="arrow-right"></i></button></div>
+              <div id="recentRecord" class="record-list"></div>
+            </section>
+            <section class="panel watch-panel">
+              <div class="panel-heading"><div><p class="eyebrow">Risk monitor</p><h2>Compliance watch</h2></div></div>
+              <div id="complianceWatch" class="watch-list"></div>
+            </section>
+          </div>
+        </section>
+
+        <section class="view" id="recordView">
+          <div class="section-toolbar">
+            <div><p class="eyebrow">Conviction-based enforcement</p><h2>Driver record</h2></div>
+            <div class="filter-group" role="group" aria-label="Record filter">
+              <button class="filter active" data-filter="all">All</button>
+              <button class="filter" data-filter="pending">Pending</button>
+              <button class="filter" data-filter="convicted">Convicted</button>
+              <button class="filter" data-filter="dismissed">Dismissed</button>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Date</th><th>Incident</th><th>Category</th><th>Outcome</th><th>Consequence</th><th></th></tr></thead>
+              <tbody id="recordTableBody"></tbody>
+            </table>
+            <div class="empty-state hidden" id="recordEmpty"><i data-lucide="clipboard-x"></i><strong>No incidents in this view</strong></div>
+          </div>
+        </section>
+
+        <section class="view" id="fuelView">
+          <div class="section-toolbar">
+            <div><p class="eyebrow">Operating expenses</p><h2>Fuel report</h2></div>
+            <span class="fuel-source"><i data-lucide="radio"></i>Gallons detected from the connected game · enter station price</span>
+          </div>
+          <div class="metric-grid fuel-metrics">
+            <article class="metric"><span>Fill-ups</span><strong id="fuelStopCount">0</strong><small>Detected purchases</small></article>
+            <article class="metric"><span>Total gallons</span><strong id="fuelGallonTotal">0.0</strong><small>US gallons</small></article>
+            <article class="metric"><span>Total spent</span><strong id="fuelSpentTotal">$0</strong><small>Entered fuel costs</small></article>
+            <article class="metric"><span>Average price</span><strong id="fuelAveragePrice">$0.00</strong><small>Per gallon</small></article>
+          </div>
+          <div class="table-wrap">
+            <table class="fuel-table">
+              <thead><tr><th>Date</th><th>Station</th><th>Fuel added</th><th>Price / gallon</th><th>Amount spent</th><th></th></tr></thead>
+              <tbody id="fuelTableBody"></tbody>
+            </table>
+            <datalist id="fuelStationOptions"></datalist>
+            <div class="empty-state" id="fuelEmpty"><i data-lucide="fuel"></i><strong>No fill-ups detected</strong><small>Start ATS or ETS2 and refuel to create the first entry.</small></div>
+          </div>
+        </section>
+
+        <section class="view" id="cargoView">
+          <div class="section-toolbar">
+            <div><p class="eyebrow">Freight operations</p><h2>Cargo report</h2></div>
+            <span class="fuel-source"><i data-lucide="radio"></i>Jobs imported automatically from the connected game</span>
+          </div>
+          <div class="metric-grid fuel-metrics">
+            <article class="metric"><span>Jobs</span><strong id="cargoJobCount">0</strong><small>Accepted loads</small></article>
+            <article class="metric"><span>Trip miles</span><strong id="cargoMileTotal">0</strong><small>Planned distance</small></article>
+            <article class="metric"><span>Cargo value</span><strong id="cargoValueTotal">$0</strong><small>Expected ATS payouts</small></article>
+            <article class="metric"><span>Average trip</span><strong id="cargoAverageMiles">0 mi</strong><small>Per accepted load</small></article>
+          </div>
+          <div class="table-wrap">
+            <table class="cargo-table">
+              <thead><tr><th>Date</th><th>Pick up from</th><th>Deliver to</th><th>Cargo type</th><th>Trip</th><th>Cargo value</th><th></th></tr></thead>
+              <tbody id="cargoTableBody"></tbody>
+            </table>
+            <div class="empty-state" id="cargoEmpty"><i data-lucide="package-search"></i><strong>No cargo jobs detected</strong><small>Accept an ATS or ETS2 job to import its route and load details.</small></div>
+          </div>
+        </section>
+
+        <section class="view" id="profileView">
+          <div class="profile-layout">
+            <form class="panel profile-form" id="profileForm">
+              <div class="panel-heading"><div><p class="eyebrow">Driver file</p><h2>CDL profile</h2></div><span class="save-indicator" id="saveIndicator">Saved locally</span></div>
+              <div class="form-grid">
+                <label class="wide"><span>Driver name</span><input name="driverName" maxlength="60" placeholder="New Driver"></label>
+                <fieldset class="photo-field wide"><legend>Driver photo</legend><div><label class="button secondary file-button"><i data-lucide="image-plus"></i>Choose photo<input type="file" id="driverPhotoInput" accept="image/*"></label><button class="button danger hidden" id="removeDriverPhoto" type="button"><i data-lucide="trash-2"></i>Remove photo</button></div><small>ATS and ETS2 do not expose profile pictures to telemetry, so choose the matching image here.</small></fieldset>
+                <label><span>Home state</span><select name="homeState" id="stateSelect"></select></label>
+                <label><span>CDL class</span><select name="cdlClass"><option>A</option><option>B</option><option>C</option></select></label>
+                <fieldset class="wide"><legend>Endorsements</legend><div class="checkbox-row" id="endorsementOptions"></div></fieldset>
+                <label><span>Medical certificate expires</span><input type="date" name="medicalExpiry"></label>
+                <label><span>Gameplay cash</span><input type="number" name="cash" min="0" step="1"></label>
+                <label><span>Defensive-driving course date</span><input type="date" name="defensiveCourseDate"></label>
+                <label><span>Prior Oklahoma point suspensions</span><input type="number" name="oklahomaPriorPointSuspensions" min="0" max="20" step="1"></label>
+                <label class="toggle-row wide"><input type="checkbox" name="strictMode"><span><strong>Strict enforcement mode</strong><small>Apply federal and Oklahoma actions automatically after conviction.</small></span></label>
+              </div>
+              <div class="form-actions"><button type="submit" class="button primary"><i data-lucide="save"></i>Save profile</button></div>
+            </form>
+
+            <aside class="panel license-preview">
+              <div class="panel-heading"><div><p class="eyebrow">Credential</p><h2>In-game CDL</h2></div></div>
+              <div class="license-card">
+                <div class="license-top"><span>COMMERCIAL DRIVER LICENSE</span><strong id="cardState">USA</strong></div>
+                <div class="license-body">
+                  <div class="portrait"><img class="hidden" id="cardPhoto" alt="Driver portrait"><i id="cardPortraitIcon" data-lucide="user-round"></i></div>
+                  <div><small>DRIVER</small><strong id="cardName">NEW DRIVER</strong><small>CLASS</small><strong id="cardClass">A</strong><span class="credential-detail" id="cardClassDescription">Combination vehicles with a heavy trailer</span></div>
+                </div>
+                <div class="license-bottom"><span>ENDORSEMENTS</span><strong id="cardEndorsements">NONE</strong><span class="credential-detail" id="cardEndorsementDescriptions">No endorsements selected</span></div>
+              </div>
+              <p class="state-note">Oklahoma is the active state rules pack. It tracks a separate point cycle and state suspension alongside federal CDL disqualifications.</p>
+              <button class="button danger ghost full" id="resetButton" type="button"><i data-lucide="rotate-ccw"></i>Reset simulation</button>
+            </aside>
+          </div>
+        </section>
+
+        <section class="view" id="rulesView">
+          <div class="rules-intro"><div><p class="eyebrow">Rules desk</p><h2>Federal and Oklahoma matrix</h2></div><p>Gameplay implementation of 49 CFR §383.51 and Oklahoma Title 47. It applies convictions, not merely citations. Oklahoma incident points remain editable for local charging differences.</p></div>
+          <div class="rules-grid" id="rulesGrid"></div>
+          <div class="source-strip"><i data-lucide="landmark"></i><span>Federal rules checked July 30, 2026; Oklahoma statutes checked against the 2025 codification and July 1, 2026 fee amendment.</span><a href="https://www.ecfr.gov/current/title-49/section-383.51" target="_blank" rel="noreferrer">49 CFR §383.51 <i data-lucide="external-link"></i></a><a href="https://law.justia.com/codes/oklahoma/title-47/section-47-6-212/" target="_blank" rel="noreferrer">OK Title 47 <i data-lucide="external-link"></i></a></div>
+        </section>
+
+        <section class="view" id="aboutView">
+          <section class="about-hero">
+            <div>
+              <p class="eyebrow">About CDL Lisence</p>
+              <h2>Your virtual CDL operations desk</h2>
+              <p>Road Authority turns supported ATS and ETS2 telemetry into a private, fictional driver record. It brings fines, cargo, fuel activity, collision reviews, CDL status, and simulated compliance rules together in one dashboard.</p>
+              <div class="about-tags" aria-label="Application highlights"><span><i data-lucide="radio"></i>Live telemetry</span><span><i data-lucide="hard-drive"></i>Local records</span><span><i data-lucide="gamepad-2"></i>ATS &amp; ETS2</span></div>
+            </div>
+            <a class="button about-download" href="https://github.com/DragonWatcher2873/ats-cdl-companion/releases/latest/download/CDL-Lisence-Setup.exe"><i data-lucide="hard-drive-download"></i>Get the Windows installer</a>
+          </section>
+
+          <section class="guide-section" aria-labelledby="startHeading">
+            <div class="guide-heading"><p class="eyebrow">Getting started</p><h2 id="startHeading">Four steps to connect</h2></div>
+            <ol class="setup-steps">
+              <li><span>01</span><div><strong>Close both games</strong><p>Exit ATS and ETS2 before installing so their plugin folders can be updated safely.</p></div></li>
+              <li><span>02</span><div><strong>Run the installer</strong><p>CDL Lisence detects your Steam libraries and installs the native plugin into each supported game it finds.</p></div></li>
+              <li><span>03</span><div><strong>Start a profile</strong><p>Launch one game and load a driver profile. The status at the top changes when live telemetry begins.</p></div></li>
+              <li><span>04</span><div><strong>Keep this site open</strong><p>The browser reads the local plugin, imports new activity once, and updates your reports automatically.</p></div></li>
+            </ol>
+          </section>
+
+          <section class="guide-section" aria-labelledby="fullSetupHeading">
+            <div class="guide-heading"><p class="eyebrow">First-time walkthrough</p><h2 id="fullSetupHeading">Install and verify the connection</h2></div>
+            <div class="setup-manual">
+              <ol class="setup-checklist">
+                <li><span>1</span><div><strong>Download the official installer</strong><p>Use the Download CDL Lisence button on this site. The installer supports 64-bit Steam installations of American Truck Simulator and Euro Truck Simulator 2.</p></div></li>
+                <li><span>2</span><div><strong>Exit ATS and ETS2</strong><p>Close both games completely before installation. This lets the installer safely add or update the telemetry plugin.</p></div></li>
+                <li><span>3</span><div><strong>Run CDL-Lisence-Setup.exe</strong><p>Approve the Windows administrator prompt. Windows may show SmartScreen because the installer is not code-signed; only continue with the file downloaded from this official project.</p></div></li>
+                <li><span>4</span><div><strong>Confirm the detected games</strong><p>The installer searches your default and additional Steam libraries, then installs CDL Lisence.dll into every supported game it finds. No manual folder selection is needed.</p></div></li>
+                <li><span>5</span><div><strong>Launch one game</strong><p>Start ATS or ETS2. If the game displays an SDK or telemetry notice, acknowledge it; that notice is expected when a telemetry plugin is installed.</p></div></li>
+                <li><span>6</span><div><strong>Load your game profile</strong><p>At the game menu, this site reads <b>ATS/ETS2 open · select profile</b>. Select a driver and enter the game world; the status then changes to your configured driver name and <b>online</b>.</p></div></li>
+              </ol>
+              <aside class="connection-key" aria-label="Connection status meanings">
+                <p class="eyebrow">Status check</p>
+                <h3>Know when it is working</h3>
+                <div><span class="status-dot offline-dot"></span><strong>Game offline</strong><small>The local plugin bridge cannot be reached.</small></div>
+                <div><span class="status-dot waiting-dot"></span><strong>ATS/ETS2 open · select profile</strong><small>The plugin is connected; load a driver profile.</small></div>
+                <div><span class="status-dot online-dot"></span><strong>Driver online · ATS/ETS2</strong><small>Live profile telemetry is connected and ready.</small></div>
+                <p class="connection-note"><i data-lucide="info"></i>The site checks automatically every three seconds. Keep this page open while playing; no account or pairing code is required.</p>
+              </aside>
+            </div>
+          </section>
+
+          <section class="guide-section" aria-labelledby="profileSetupHeading">
+            <div class="profile-guide-heading">
+              <div><p class="eyebrow">Configure the simulation</p><h2 id="profileSetupHeading">Set up your CDL Profile</h2></div>
+              <button class="button primary" type="button" data-go-view="profile"><i data-lucide="contact"></i>Open CDL Profile</button>
+            </div>
+            <div class="profile-field-grid">
+              <article><i data-lucide="user-round"></i><div><strong>Driver name</strong><p>Enter the fictional name displayed on your in-game CDL, dashboard, and online connection status.</p></div></article>
+              <article><i data-lucide="map"></i><div><strong>Home state</strong><p>Choose Oklahoma to enable its point cycle and suspension rules. Other states retain the federal simulation without an active state rules pack.</p></div></article>
+              <article><i data-lucide="badge-check"></i><div><strong>Class and endorsements</strong><p>Select the CDL class and H, N, P, S, T, or X endorsements you want shown on the fictional credential.<span class="endorsement-key"><b>H</b> = Hazardous materials · <b>N</b> = Tank vehicles · <b>P</b> = Passengers · <b>S</b> = School buses · <b>T</b> = Double/triple trailers · <b>X</b> = Tank vehicles and hazardous materials</span></p></div></article>
+              <article><i data-lucide="stethoscope"></i><div><strong>Medical expiration</strong><p>Set the certificate date. Passing the selected game date changes the dashboard status to Not Certified.</p></div></article>
+              <article><i data-lucide="wallet-cards"></i><div><strong>Gameplay cash</strong><p>Enter the balance available for paying gameplay fines from the Driver Record. This does not change money inside ATS or ETS2.</p></div></article>
+              <article><i data-lucide="graduation-cap"></i><div><strong>Defensive-driving date</strong><p>An eligible course dated after the latest point event removes two points from the simulated Oklahoma balance.</p></div></article>
+              <article><i data-lucide="history"></i><div><strong>Prior point suspensions</strong><p>Enter earlier Oklahoma point suspensions so the next simulated action uses the correct 30, 90, 180, or 365-day sequence.</p></div></article>
+              <article><i data-lucide="shield-check"></i><div><strong>Strict enforcement mode</strong><p>On applies active federal and Oklahoma sanctions to the CDL status. Off reports the same calculated actions as advisories.</p></div></article>
+            </div>
+            <div class="save-profile-note"><i data-lucide="save"></i><div><strong>Finish with Save profile</strong><p>Your selections are stored locally in this browser and immediately update the dashboard and in-game CDL preview.</p></div></div>
+          </section>
+
+          <section class="guide-section" aria-labelledby="troubleshootingHeading">
+            <div class="guide-heading"><p class="eyebrow">Connection help</p><h2 id="troubleshootingHeading">If the site still says Game offline</h2></div>
+            <div class="troubleshooting-grid">
+              <div><span>01</span><p>Confirm ATS or ETS2 is running. The website cannot connect while both games are closed.</p></div>
+              <div><span>02</span><p>Close the game, rerun the latest official installer, and then restart the game. Updates can replace plugin files.</p></div>
+              <div><span>03</span><p>Verify <b>CDL Lisence.dll</b> exists in the game’s <b>bin\win_x64\plugins</b> folder.</p></div>
+              <div><span>04</span><p>Run only one supported game at a time because ATS and ETS2 share the same local telemetry port.</p></div>
+              <div><span>05</span><p>Use this official GitHub Pages site. The local bridge rejects unrelated website origins for privacy.</p></div>
+              <div><span>06</span><p>If the status says <b>open · select profile</b>, installation succeeded; load a driver profile and enter the game world.</p></div>
+            </div>
+          </section>
+
+          <section class="guide-section" aria-labelledby="connectionHeading">
+            <div class="guide-heading"><p class="eyebrow">Under the hood</p><h2 id="connectionHeading">How the connection works</h2></div>
+            <div class="connection-flow" aria-label="Telemetry data flow">
+              <div><i data-lucide="gamepad-2"></i><strong>ATS or ETS2</strong><small>Produces game telemetry</small></div>
+              <i data-lucide="arrow-right" aria-hidden="true"></i>
+              <div><i data-lucide="puzzle"></i><strong>CDL Lisence plugin</strong><small>Captures supported events</small></div>
+              <i data-lucide="arrow-right" aria-hidden="true"></i>
+              <div><i data-lucide="radio-tower"></i><strong>Local bridge</strong><small>Runs at 127.0.0.1</small></div>
+              <i data-lucide="arrow-right" aria-hidden="true"></i>
+              <div><i data-lucide="layout-dashboard"></i><strong>Road Authority</strong><small>Saves reports in your browser</small></div>
+            </div>
+          </section>
+
+          <div class="help-grid">
+            <section class="help-panel automatic-panel">
+              <div class="help-panel-heading"><i data-lucide="zap"></i><div><p class="eyebrow">From the game</p><h2>Captured automatically</h2></div></div>
+              <ul class="feature-list">
+                <li><i data-lucide="user-check"></i><div><strong>Connection and profile status</strong><p>Shows which supported game is open and whether a driver profile is actively sending telemetry.</p></div></li>
+                <li><i data-lucide="receipt-text"></i><div><strong>Official gameplay fines</strong><p>Imports SCS fine events once and preserves events captured while the website was closed.</p></div></li>
+                <li><i data-lucide="package-check"></i><div><strong>Accepted cargo jobs</strong><p>Records cargo, route companies and cities, planned distance, and expected payout.</p></div></li>
+                <li><i data-lucide="fuel"></i><div><strong>Fuel quantity and location</strong><p>Combines confirmed tank increases into fill-ups and records game-world coordinates.</p></div></li>
+                <li><i data-lucide="car-front"></i><div><strong>Possible collision damage</strong><p>Detects sudden vehicle damage and asks you to confirm whether traffic was involved.</p></div></li>
+              </ul>
+            </section>
+
+            <section class="help-panel manual-panel">
+              <div class="help-panel-heading"><i data-lucide="mouse-pointer-click"></i><div><p class="eyebrow">From the driver</p><h2>You review or enter</h2></div></div>
+              <ul class="feature-list">
+                <li><i data-lucide="map-pin"></i><div><strong>Station name and fuel price</strong><p>The SDK does not provide either value. Name a location once for automatic recognition on later visits.</p></div></li>
+                <li><i data-lucide="messages-square"></i><div><strong>Collision confirmation</strong><p>Damage alone cannot prove a traffic collision. You decide whether a pending report is created.</p></div></li>
+                <li><i data-lucide="gavel"></i><div><strong>Case outcome and details</strong><p>Choose pending, convicted, or dismissed and add gameplay fines, points, and notes when needed.</p></div></li>
+                <li><i data-lucide="contact"></i><div><strong>Fictional CDL profile</strong><p>Set the name, home state, class, endorsements, medical date, and enforcement preferences.</p></div></li>
+                <li><i data-lucide="calendar-days"></i><div><strong>Simulation date</strong><p>The selected game date controls rolling rule windows, medical status, and simulated sanctions.</p></div></li>
+              </ul>
+            </section>
+          </div>
+
+          <section class="release-panel" aria-labelledby="releaseHeading">
+            <div class="release-heading">
+              <div><p class="eyebrow">Current release</p><h2 id="releaseHeading">CDL Lisence 1.1.3</h2></div>
+              <a class="button primary" href="https://github.com/DragonWatcher2873/ats-cdl-companion/releases/latest/download/CDL-Lisence-Setup.exe"><i data-lucide="download"></i>Download update</a>
+            </div>
+            <div class="release-notes">
+              <div><span>Included</span><strong>Telemetry and account features</strong><p>Automatic fines, fuel and cargo reports, collision review, driver photos, local-time dates, and optional Discord or Steam cloud sync.</p></div>
+              <div><span>Changed</span><strong>Smoother fuel-stop detection</strong><p>The plugin now keeps one fueling session open through brief in-game pump pauses. The installer updates an existing installation without deleting saved records.</p></div>
+              <div><span>Fixed</span><strong>Duplicate fuel reports</strong><p>Version 1.1.3 fixes one fuel stop being split into two report entries when fuel delivery pauses temporarily.</p></div>
+            </div>
+          </section>
+
+          <div class="help-grid lower-help-grid">
+            <section class="help-panel compact-help-panel">
+              <div class="help-panel-heading"><i data-lucide="shield-check"></i><div><p class="eyebrow">Privacy</p><h2>Local first, cloud optional</h2></div></div>
+              <p>Your profile, incidents, fuel history, cargo history, and learned stations stay in this browser unless you sign in and enable companion record sync. The plugin also keeps captured fine events in your game Documents folder so they can be recovered after a restart.</p>
+              <p>Without an account, only an anonymous random session ID and the active game are sent for the community counter. With an account, the companion record is stored in the project database so it can load in another browser. Discord or Steam authenticates identity only; neither provider supplies game telemetry, saves, or passwords.</p>
+              <p>Use <strong>Export record</strong> for a backup before clearing browser data or moving to another browser, then use <strong>Import record</strong> to restore it.</p>
+            </section>
+
+            <section class="help-panel compact-help-panel">
+              <div class="help-panel-heading"><i data-lucide="triangle-alert"></i><div><p class="eyebrow">Important limits</p><h2>What this is not</h2></div></div>
+              <p>This is a fictional gameplay companion. It is not legal advice, an official driving record, a government service, or a substitute for current laws and agency guidance.</p>
+              <p>Collision detection is an informed damage signal, not a direct SCS collision event. Fuel cost is calculated from the price you enter. Cargo value means the game's expected job payout.</p>
+              <p>The plugin supports SCS telemetry API 1.x minor revisions. A future incompatible 2.x API or game architecture change may require an updated plugin.</p>
+            </section>
+          </div>
+
+          <section class="creator-strip">
+            <span class="creator-mark">DW</span>
+            <div><p class="eyebrow">Creator</p><h2>Built by DragonWatcher</h2><p>DragonWatcher is the sole founder, designer, and creator of Road Authority and CDL Lisence. The project was created for players who want their trucking career to feel more persistent, accountable, and connected across ATS and ETS2.</p></div>
+            <a href="https://github.com/DragonWatcher2873/ats-cdl-companion/releases" target="_blank" rel="noreferrer">Download releases <i data-lucide="external-link"></i></a>
+          </section>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <dialog id="accountDialog">
+    <div class="dialog-form account-dialog">
+      <div class="dialog-heading"><div><p class="eyebrow">Cloud companion</p><h2>Your account</h2></div><button class="icon-button" id="closeAccountButton" type="button" title="Close" aria-label="Close account"><i data-lucide="x"></i></button></div>
+      <div class="account-body">
+        <div class="account-intro"><i data-lucide="cloud"></i><div><strong id="accountHeading">Sign in to sync this record</strong><p id="accountMessage">Choose Discord or Steam. Login identifies your companion account; CDL Lisence still reads game activity through the installed local plugin.</p></div></div>
+        <div class="provider-actions" id="providerActions">
+          <button class="provider-button discord-provider" type="button" data-auth-provider="discord"><i data-lucide="message-circle"></i><span><strong>Continue with Discord</strong><small>Uses your Discord identity</small></span></button>
+          <button class="provider-button steam-provider" type="button" data-auth-provider="steam"><i data-lucide="gamepad-2"></i><span><strong>Sign in through Steam</strong><small>Uses your verified SteamID</small></span></button>
+        </div>
+        <div class="identity-list hidden" id="identityList" aria-label="Linked sign-in methods"></div>
+        <div class="sync-conflict hidden" id="syncConflict">
+          <strong>Choose which record to keep</strong>
+          <p>This browser and your cloud account contain different records. Nothing will be overwritten until you choose.</p>
+          <div><button class="button secondary" type="button" id="useCloudButton"><i data-lucide="cloud-download"></i>Use cloud record</button><button class="button primary" type="button" id="keepBrowserButton"><i data-lucide="cloud-upload"></i>Keep browser record</button></div>
+        </div>
+        <p class="sync-status" id="syncStatus" role="status" aria-live="polite">Not signed in</p>
+      </div>
+      <div class="dialog-actions account-dialog-actions hidden" id="accountDialogActions"><button class="button danger" type="button" id="logoutButton"><i data-lucide="log-out"></i>Sign out</button><button class="button secondary" type="button" id="syncNowButton"><i data-lucide="refresh-cw"></i>Sync now</button></div>
+    </div>
+  </dialog>
+
+  <dialog id="incidentDialog">
+    <form method="dialog" class="dialog-form" id="incidentForm">
+      <div class="dialog-heading"><div><p class="eyebrow">Driver record entry</p><h2>Log an ATS incident</h2></div><button class="icon-button" type="button" data-close-incident title="Close" aria-label="Close"><i data-lucide="x"></i></button></div>
+      <div class="form-grid">
+        <label><span>Incident date</span><input type="date" name="date" required></label>
+        <label><span>Case outcome</span><select name="outcome"><option value="pending">Pending</option><option value="convicted">Convicted</option><option value="dismissed">Dismissed</option></select></label>
+        <label class="wide"><span>Violation</span><select name="offense" id="offenseSelect" required></select></label>
+        <label><span>Vehicle context</span><select name="vehicle"><option value="cmv">Commercial vehicle</option><option value="non-cmv">Personal vehicle</option></select></label>
+        <label><span>Cargo</span><select name="cargo"><option value="general">General / none</option><option value="hazmat">Placarded hazardous materials</option></select></label>
+        <label><span>Gameplay fine</span><input type="number" name="fine" min="0" step="50" value="0"></label>
+        <label><span>Oklahoma points</span><input type="number" name="statePoints" min="0" max="10" step="1" value="0"></label>
+        <label><span>Fine status</span><select name="finePaid"><option value="false">Unpaid</option><option value="true">Paid</option></select></label>
+        <label class="wide"><span>Notes</span><textarea name="notes" rows="3" maxlength="240" placeholder="Route, location, citation details..."></textarea></label>
+      </div>
+      <div class="impact-preview" id="impactPreview"></div>
+      <div class="dialog-actions"><button class="button secondary" type="button" data-close-incident>Cancel</button><button class="button primary" id="saveIncidentButton" value="default"><i data-lucide="check"></i>Save incident</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="collisionDialog">
+    <div class="dialog-form">
+      <div class="dialog-heading"><div><p class="eyebrow">Damage alert</p><h2>Possible collision detected</h2></div></div>
+      <div class="collision-confirmation">
+        <i data-lucide="triangle-alert"></i>
+        <div><strong>Did you hit another vehicle?</strong><p id="collisionDetail">ATS reported a sudden increase in vehicle damage.</p></div>
+      </div>
+      <div class="impact-preview">Nothing is added automatically. Confirming traffic creates a pending accident report with no fine or points unless ATS separately issues a citation.</div>
+      <div class="dialog-actions"><button class="button secondary" type="button" id="dismissCollisionButton">Not traffic</button><button class="button primary" type="button" id="confirmCollisionButton"><i data-lucide="car-front"></i>Hit traffic</button></div>
+    </div>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js" integrity="sha384-uTYyvsSSUZeaPhb5RbKlQa0zY/WpX/QHfvg2mczXyBQOpkWPEDy9lczyp+w7SKXu" crossorigin="anonymous"></script>
+  <script src="app.js?v=cb4cbdf"></script>
+</body>
+</html>
