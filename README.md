@@ -2,7 +2,7 @@
 
 Public website and release downloads for the Road Authority ATS & ETS2 CDL Companion.
 
-Website: https://dragonwatcher2873.github.io/ats-cdl-companion/
+Website: https://dragonwatcher2873.github.io/trucking-cdl-companion/
 
 This repository contains public browser assets and compiled release downloads only. The private application, telemetry plugin, Worker, and installer source are not published here.
 
